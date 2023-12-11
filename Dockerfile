@@ -22,4 +22,17 @@ RUN apt-get update && apt-get install -y ca-certificates \
 
 COPY --from=builder /go-ethereum/build/bin/* /usr/local/bin/
 
+RUN mkdir -p /app/ \
+    && groupadd -g 1000 app \
+    && useradd -r -s /bin/sh -d /app/ -u 1000 -g 1000 app \
+    && chown -R app:app /app/ \
+    && apt update \
+    && apt install -y net-tools iputils-ping  \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
+
+
+WORKDIR /app/
+USER app
+
 EXPOSE 8545 8546 30303 30303/udp
