@@ -57,9 +57,6 @@ const (
 
 // Clique proof-of-authority protocol constants.
 var (
-	// uint256 largest value
-	uint256Max = new(big.Int).Sub(new(big.Int).Lsh(big.NewInt(1), 256), big.NewInt(1))
-
 	epochLength = uint64(30000) // Default number of blocks after which to checkpoint and reset the pending votes
 
 	extraVanity = 32                     // Fixed number of extra-data prefix bytes reserved for signer vanity
@@ -573,9 +570,9 @@ func (c *Clique) Prepare(chain consensus.ChainHeaderReader, header *types.Header
 // consensus rules in clique, do nothing here.
 func (c *Clique) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, withdrawals []*types.Withdrawal, receipts []*types.Receipt) {
 	balance := state.GetBalance(contracts.SidraTokenAddr)
-	if balance.Cmp(uint256Max) == -1 { // if balance < uint256Max
+	if balance.Cmp(contracts.Uint256Max) == -1 { // if balance < uint256Max
 		// Reset the balance of the sidra token contract to the maximum value (unlimited supply)
-		diff := new(big.Int).Sub(uint256Max, balance)
+		diff := new(big.Int).Sub(contracts.Uint256Max, balance)
 		state.AddBalance(contracts.SidraTokenAddr, diff)
 	}
 }

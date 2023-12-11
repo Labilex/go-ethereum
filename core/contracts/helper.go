@@ -34,9 +34,6 @@ var (
 		WaqfAddr:          true,
 		ZakatAddr:         true,
 	}
-	Big4 = big.NewInt(4)
-	Big5 = big.NewInt(5)
-	Big6 = big.NewInt(6)
 )
 
 // https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html#mappings-and-dynamic-arrays
@@ -129,24 +126,24 @@ func WalletStatus(addr *common.Address, statedb *state.StateDB) *big.Int {
 func IsSystemContract(addr common.Address) bool {
 	return SystemWallets[addr]
 }
-func InBlackList(value *big.Int) bool {
-	return value.Cmp(common.Big0) == 0
+func UnListedOrInBlackList(value *big.Int) bool {
+	return value.Cmp(common.Big0) == 0 || value.Cmp(common.Big2) == 0
 }
 func InWhiteList(value *big.Int) bool {
 	return value.Cmp(common.Big1) == 0
 }
 func InGreyList(value *big.Int) bool {
 	// greater than 1
-	return value.Cmp(common.Big1) == 1
+	return value.Cmp(common.Big2) == 1
 }
 func InSendingGreyList(value *big.Int) bool {
-	return value.Cmp(common.Big2) == 0
-}
-func InRecievingGreyList(value *big.Int) bool {
 	return value.Cmp(common.Big3) == 0
 }
-func InPoolGreyList(value *big.Int) bool {
+func InRecievingGreyList(value *big.Int) bool {
 	return value.Cmp(Big4) == 0
+}
+func InPoolGreyList(value *big.Int) bool {
+	return value.Cmp(Big5) == 0
 }
 
 func IsTransactionAllowed(tx *types.Transaction, sender *common.Address, statedb *state.StateDB) bool {
@@ -166,7 +163,7 @@ func IsTransactionAllowed(tx *types.Transaction, sender *common.Address, statedb
 		// Return true if both sender and receiver are whitelisted.
 		return true
 	}
-	if InBlackList(senderStatus) || InBlackList(receiverStatus) {
+	if UnListedOrInBlackList(senderStatus) || UnListedOrInBlackList(receiverStatus) {
 		// Return false if either sender or receiver is blacklisted.
 		return false
 	}
@@ -184,18 +181,4 @@ func IsTransactionAllowed(tx *types.Transaction, sender *common.Address, statedb
 	}
 	// Return false if none of the above conditions are met.
 	return false
-}
-
-func GetCurrentOwnerAddr(statedb *state.StateDB) common.Address {
-	// Get the state of the Owner contract.
-	ownerState := statedb.GetOrNewStateObject(OwnerContractAddr)
-
-	// Get the slot number of the owner address.
-	slot := common.BigToHash(big.NewInt(0))
-
-	// Get the value of the slot from the state.
-	value := ownerState.GetState(slot).Big()
-
-	// Return the address of the owner.
-	return common.BigToAddress(value)
 }
