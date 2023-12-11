@@ -171,9 +171,8 @@ func IsTransactionAllowed(tx *types.Transaction, sender *common.Address, statedb
 		// Return true if the sender is greylisted and the receiver is one of the system wallets.
 		return true
 	}
-	if InPoolGreyList(senderStatus) && IsInSamePool(sender, recipient, statedb) {
-		// Return true if the sender is greylisted for pool and the receiver is in the same pool.
-		return true
+	if InPoolGreyList(senderStatus) || InPoolGreyList(receiverStatus) {
+		return IsInSamePool(sender, recipient, statedb)
 	}
 	if !InSendingGreyList(senderStatus) && !InRecievingGreyList(receiverStatus) {
 		// Return true if the sender is not greylisted for sending and the receiver is not greylisted for receiving.
